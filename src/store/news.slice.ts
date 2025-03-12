@@ -1,3 +1,4 @@
+import { groupNewsByDate } from "@/helpers/common";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -11,13 +12,13 @@ export interface NewsItem {
 }
 
 interface NewsState {
-  items: NewsItem[];
+  groupedNews: { date: string; items: NewsItem[] }[];
   status: "idle" | "loading" | "success" | "failed";
   error: string | null;
 }
 
 const initialState: NewsState = {
-  items: [],
+  groupedNews: [],
   status: "idle",
   error: null,
 };
@@ -28,7 +29,8 @@ export const getNews = createAsyncThunk(
     const response = await axios.get(
       `https://cors-anywhere.herokuapp.com/https://api.nytimes.com/svc/archive/v1/${year}/${month}.json?api-key=vEJwp3nmtqMIO6FDqQwyQdjbTzJcbdAh`,
     );
-    return response.data.response.docs;
+    const reversedData = response.data.response.docs.reverse();
+    return groupNewsByDate(reversedData);
   },
 );
 
@@ -43,7 +45,7 @@ const newsSlice = createSlice({
       })
       .addCase(getNews.fulfilled, (state, action) => {
         state.status = "success";
-        state.items = action.payload;
+        state.groupedNews = [...state.groupedNews, ...action.payload];
       })
       .addCase(getNews.rejected, (state, action) => {
         state.status = "failed";
