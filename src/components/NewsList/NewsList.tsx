@@ -1,53 +1,21 @@
-import { getNews } from "@/store/news.slice";
-import { AppDispatch, RootState } from "@/store/store";
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import { useState } from "react";
+import { useSelector } from "react-redux";
 import NewsItem from "../NewsItem/NewsItem";
-import { debounce } from "lodash";
+
+import { useFetchNews } from "./hooks/useFetchNews";
+import { useAutoFetchNews } from "./hooks/useAutoFetchNews";
+import { useScrollFetch } from "./hooks/useScrollFetch";
 
 export default function NewsList() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const dispatch = useDispatch<AppDispatch>();
   const { groupedNews, status, error } = useSelector(
     (state: RootState) => state.news,
   );
 
-  useEffect(() => {
-    dispatch(
-      getNews({
-        year: currentDate.getFullYear(),
-        month: currentDate.getMonth() + 1,
-      }),
-    );
-  }, [currentDate, dispatch]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentDate = new Date();
-      dispatch(
-        getNews({
-          year: currentDate.getFullYear(),
-          month: currentDate.getMonth() + 1,
-        }),
-      );
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [dispatch]);
-
-  useEffect(() => {
-    const handleScroll = debounce(() => {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
-        const newDate = new Date(currentDate);
-        newDate.setMonth(newDate.getMonth() - 1);
-        setCurrentDate(newDate);
-      }
-    }, 1000);
-
-    window.addEventListener("scroll", handleScroll);
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [currentDate]);
+  useFetchNews(currentDate.getFullYear(), currentDate.getMonth() + 1);
+  useAutoFetchNews();
+  useScrollFetch(currentDate, setCurrentDate);
 
   if (status === "failed") {
     return <div className="text-red-500">{error}</div>;
