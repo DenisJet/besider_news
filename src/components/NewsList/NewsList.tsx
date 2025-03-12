@@ -22,6 +22,20 @@ export default function NewsList() {
   }, [currentDate, dispatch]);
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      const currentDate = new Date();
+      dispatch(
+        getNews({
+          year: currentDate.getFullYear(),
+          month: currentDate.getMonth() + 1,
+        }),
+      );
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [dispatch]);
+
+  useEffect(() => {
     const handleScroll = debounce(() => {
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
         const newDate = new Date(currentDate);
@@ -34,37 +48,6 @@ export default function NewsList() {
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, [currentDate]);
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     const currentDate = new Date();
-  //     dispatch(
-  //       getNews({
-  //         year: currentDate.getFullYear(),
-  //         month: currentDate.getMonth() + 1,
-  //       }),
-  //     ).then((action) => {
-  //       if (getNews.fulfilled.match(action)) {
-  //         const newNews = action.payload;
-
-  //         const uniqueNews = newNews.filter(
-  //           (newItem: NewsItemInterface) =>
-  //             !items.some((existingItem) => existingItem._id === newItem._id),
-  //         );
-  //         if (uniqueNews.length > 0) {
-  //           dispatch({
-  //             type: "news/addNews",
-  //             payload: uniqueNews,
-  //           });
-  //         }
-  //       }
-  //     });
-  //   }, 30000);
-
-  //   return () => clearInterval(interval);
-  // }, [dispatch, items]);
-
-  console.log(groupedNews);
 
   if (status === "failed") {
     return <div className="text-red-500">{error}</div>;

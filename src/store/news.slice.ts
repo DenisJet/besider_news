@@ -45,7 +45,23 @@ const newsSlice = createSlice({
       })
       .addCase(getNews.fulfilled, (state, action) => {
         state.status = "success";
-        state.groupedNews = [...state.groupedNews, ...action.payload];
+
+        const uniqueNews = action.payload.filter((newGroup) => {
+          const existingGroup = state.groupedNews.find(
+            (group) => group.date === newGroup.date,
+          );
+
+          if (!existingGroup) return true;
+
+          return newGroup.items.some(
+            (newItem) =>
+              !existingGroup.items.some(
+                (existingItem) => existingItem._id === newItem._id,
+              ),
+          );
+        });
+
+        state.groupedNews = [...state.groupedNews, ...uniqueNews];
       })
       .addCase(getNews.rejected, (state, action) => {
         state.status = "failed";
