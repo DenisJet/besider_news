@@ -12,7 +12,7 @@ export const useScrollFetch = (
         newDate.setMonth(newDate.getMonth() - 1);
         setCurrentDate(newDate);
       }
-    }, 1000);
+    }, 3000);
 
     window.addEventListener("scroll", handleScroll);
 
